@@ -674,7 +674,7 @@ function renderTrend(){
       var j=judge(p,r.sys,r.dia);
       svg+='<text x="'+X(i)+'" y="'+(H-9)+'" text-anchor="middle" font-size="11" fill="#9a9ea5">'+cnDate(r.date)+'</text>'+
         '<circle cx="'+X(i)+'" cy="'+Y(Number(r.sys))+'" r="4" fill="'+
-        (j&&j.k==="ok"?"#1D9E75":(j&&j.k==="bad"?"#E24B4A":"#EF9F27"))+'/>';});
+        (j&&j.k==="ok"?"#1D9E75":(j&&j.k==="bad"?"#E24B4A":"#EF9F27"))+'"/>';});
     svg+='</svg><p class="hint" style="margin:8px 0 0">'+
       '<span style="color:#D85A30">—</span> 高压　<span style="color:#378ADD">—</span> 低压</p>';
     c.innerHTML=svg;
