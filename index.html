@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="健康小助手">
+<meta name="theme-color" content="#f4f4f1">
+<title>健康小助手</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23185fa5'/%3E%3Cpath d='M32 48s-14-8.7-14-19a8 8 0 0 1 14-5.3A8 8 0 0 1 46 29c0 10.3-14 19-14 19z' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23185fa5'/%3E%3Cpath d='M32 48s-14-8.7-14-19a8 8 0 0 1 14-5.3A8 8 0 0 1 46 29c0 10.3-14 19-14 19z' fill='%23fff'/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#f4f4f1; --card:#ffffff; --line:#e4e3de; --line2:#d2d1ca;
+  --text:#22252a; --sub:#6b6f76; --hint:#9a9ea5;
+  --ok:#0f6e56; --ok-bg:#e1f5ee;
+  --warn:#854f0b; --warn-bg:#faeeda;
+  --bad:#a32d2d; --bad-bg:#fcebeb;
+  --accent:#185fa5; --accent-bg:#e6f1fb;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--text);
+  font:17px/1.65 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+  padding:0 0 calc(84px + env(safe-area-inset-bottom));-webkit-font-smoothing:antialiased}
+.wrap{max-width:560px;margin:0 auto;padding:14px}
+h1{font-size:22px;font-weight:500;margin:0}
+h2{font-size:18px;font-weight:500;margin:0 0 12px}
+h3{font-size:15px;font-weight:500;margin:0 0 10px;color:var(--sub)}
+.card{background:var(--card);border:0.5px solid var(--line);border-radius:16px;padding:16px;margin-bottom:12px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;
+  padding:calc(10px + env(safe-area-inset-top)) 14px 10px;background:var(--bg);
+  position:sticky;top:0;z-index:20}
+.chip{background:var(--card);border:0.5px solid var(--line2);border-radius:20px;
+  padding:7px 14px;font-size:15px;cursor:pointer;min-height:38px;display:inline-flex;align-items:center}
+select,input,textarea,button{font:inherit;color:inherit}
+select,input,textarea{background:var(--card);border:0.5px solid var(--line2);border-radius:11px;
+  padding:12px;font-size:16px;width:100%;min-height:46px}
+textarea{resize:vertical;line-height:1.6}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--accent-bg);border-color:var(--accent)}
+button{background:var(--card);border:0.5px solid var(--line2);border-radius:11px;
+  padding:12px 16px;min-height:46px;cursor:pointer;font-size:16px;width:100%}
+button:hover{border-color:var(--accent);color:var(--accent)}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+button.primary:hover{opacity:.9;color:#fff}
+button.danger:hover{border-color:var(--bad);color:var(--bad)}
+.tabs{display:flex;gap:6px;margin-bottom:12px}
+.tab{flex:1;text-align:center;padding:11px 4px;border-radius:12px;border:0.5px solid var(--line2);
+  background:var(--card);cursor:pointer;font-size:15px;min-height:46px;display:flex;align-items:center;justify-content:center}
+.tab.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:rgba(255,255,255,.96);
+  border-top:0.5px solid var(--line);padding-bottom:env(safe-area-inset-bottom);z-index:30}
+.nav div{flex:1;text-align:center;padding:11px 0 10px;font-size:13px;color:var(--sub);cursor:pointer}
+.nav div.on{color:var(--accent)}
+.nav b{display:block;font-size:17px;font-weight:400;line-height:1.2;margin-bottom:2px}
+label{display:block;font-size:14px;color:var(--sub);margin-bottom:6px}
+.field{margin-bottom:12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.muted{color:var(--sub);font-size:15px}
+.hint{color:var(--hint);font-size:13px;line-height:1.55}
+.big{font-size:27px;font-weight:500;line-height:1.35}
+.pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:13px}
+.pill.ok{background:var(--ok-bg);color:var(--ok)}
+.pill.warn{background:var(--warn-bg);color:var(--warn)}
+.pill.bad{background:var(--bad-bg);color:var(--bad)}
+.banner{border-radius:16px;padding:16px;margin-bottom:12px}
+.banner.ok{background:var(--ok-bg);color:var(--ok)}
+.banner.warn{background:var(--warn-bg);color:var(--warn)}
+.banner.bad{background:var(--bad-bg);color:var(--bad)}
+.banner .big{color:inherit}
+.banner .muted{color:inherit;opacity:.85}
+.seg{display:flex;gap:8px}
+.seg button{flex:1;padding:11px 4px;font-size:15px;min-height:46px}
+.seg button.on{background:var(--accent-bg);border-color:var(--accent);color:var(--accent)}
+.list-item{border:0.5px solid var(--line);border-radius:12px;padding:12px;margin-bottom:8px;
+  display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.list-item .t{font-weight:500}
+.list-item .s{font-size:14px;color:var(--sub);line-height:1.5}
+.meal{display:flex;gap:12px;padding:11px 0;border-bottom:0.5px solid var(--line)}
+.meal:last-child{border-bottom:0;padding-bottom:0}
+.meal .when{flex:0 0 30px;font-size:14px;color:var(--sub);padding-top:2px}
+.meal .what{flex:1;font-size:16px;line-height:1.5}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:9px 4px;border-bottom:0.5px solid var(--line)}
+th{color:var(--sub);font-weight:500;font-size:13px}
+.hidden{display:none}
+.frow{display:flex;gap:10px;align-items:flex-start;padding:11px 0;border-bottom:0.5px solid var(--line)}
+.frow:last-child{border-bottom:0}
+.fthumb{width:54px;height:54px;flex:none;border-radius:10px;overflow:hidden;background:var(--bg);
+  border:0.5px solid var(--line);display:flex;align-items:center;justify-content:center;
+  font-size:19px;color:var(--hint)}
+.fthumb img{width:100%;height:100%;object-fit:cover;display:block}
+.fmeta{flex:1;min-width:0}
+.fname{font-size:15px;line-height:1.4;word-break:break-all}
+.fsub{font-size:13px;color:var(--hint);margin-top:2px}
+.fcat{font-size:14px;min-height:36px;padding:6px 8px;margin-top:6px;width:auto}
+.fdel{flex:none;font-size:13px;color:var(--bad);background:none;border:0;padding:6px 4px;min-height:0;width:auto}
+.fnote{font-size:14px;line-height:1.55;background:var(--ok-bg);border-radius:8px;padding:8px 10px;margin-top:6px;color:#0d4f3c}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:100px;background:var(--text);color:#fff;
+  padding:11px 20px;border-radius:11px;font-size:15px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:50}
+.toast.show{opacity:1}
+@media(max-width:420px){.grid3{grid-template-columns:1fr 1fr}.big{font-size:24px}}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <h1 id="titleName">健康小助手</h1>
+  <div class="row" style="gap:8px">
+    <span class="chip" id="btnSwitch">切换</span>
+    <span class="chip" id="btnNew">加人</span>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="tabs">
+    <div class="tab on" data-tab="today">今日</div>
+    <div class="tab" data-tab="trend">趋势</div>
+    <div class="tab" data-tab="profile">档案</div>
+    <div class="tab" data-tab="files">资料</div>
+    <div class="tab" data-tab="settings">设置</div>
+  </div>
+
+  <section id="tab-today">
+    <div id="todayBanner" class="banner ok"></div>
+
+    <div class="card">
+      <h2>今天记一笔</h2>
+      <div class="grid3">
+        <div class="field"><label>高压</label><input id="inSys" inputmode="numeric" placeholder="128"></div>
+        <div class="field"><label>低压</label><input id="inDia" inputmode="numeric" placeholder="82"></div>
+        <div class="field"><label>血糖</label><input id="inGlu" inputmode="decimal" placeholder="6.1"></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>体重 kg</label><input id="inWeight" inputmode="decimal" placeholder="65"></div>
+        <div class="field"><label>今天感觉</label>
+          <div class="seg" id="segMood">
+            <button data-v="好">好</button><button data-v="一般">一般</button><button data-v="不太好">不好</button>
+          </div>
+        </div>
+      </div>
+      <div class="field"><label>一句话</label><input id="inNote" placeholder="头有点晕，走了 20 分钟"></div>
+      <button class="primary" id="btnSave">保存今天的记录</button>
+      <p class="hint" id="saveHint" style="margin:8px 0 0"></p>
+    </div>
+
+    <div class="card">
+      <h2>今天吃这些药</h2>
+      <div id="medList"></div>
+      <div id="medConflict"></div>
+    </div>
+
+    <div class="card">
+      <h2>今天吃啥 <span class="hint" style="font-weight:400">每天自动换</span></h2>
+      <div id="menuBox"></div>
+      <p class="hint" id="weekFocus" style="margin:10px 0 0"></p>
+    </div>
+
+    <div class="card">
+      <h2>今天要量的</h2>
+      <div id="measureBox"></div>
+    </div>
+
+    <div class="card">
+      <h2>今日一句</h2>
+      <p class="muted" id="tipBox" style="margin:0"></p>
+    </div>
+
+    <div class="card">
+      <h2>发给爸妈的微信卡片</h2>
+      <textarea id="cardText" rows="12" readonly style="font-size:15px"></textarea>
+      <button class="primary" id="btnGen" style="margin-top:10px">生成今天这张</button>
+      <button id="btnCopy" style="margin-top:8px">复制，去微信粘贴</button>
+    </div>
+  </section>
+
+  <section id="tab-trend" class="hidden">
+    <div class="card">
+      <h2>最近 14 次血压</h2>
+      <div id="chart"></div>
+    </div>
+    <div class="card">
+      <h2>明细</h2>
+      <div style="overflow-x:auto"><table id="recTable"></table></div>
+    </div>
+  </section>
+
+  <section id="tab-profile" class="hidden">
+    <div class="card" style="border-color:var(--accent);background:var(--accent-bg)">
+      <h2>资料袋 <span class="hint" id="profileFileCount" style="font-weight:400"></span></h2>
+      <p class="muted" style="margin-top:0">体检报告、化验单、CT、病历、药盒都可以存进来，自动按类型归类；我读完的结论会挂到每一份上，并汇总成健康小结。</p>
+      <button id="btnGoFiles">去资料袋</button>
+    </div>
+
+    <div class="card">
+      <h2>基础信息</h2>
+      <div class="grid2">
+        <div class="field"><label>称呼</label><input id="pName"></div>
+        <div class="field"><label>年龄</label><input id="bAge" inputmode="numeric"></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>性别</label><input id="bGender"></div>
+        <div class="field"><label>身高 cm</label><input id="bHeight" inputmode="decimal"></div>
+      </div>
+      <div class="field"><label>体重 kg</label><input id="bWeight" inputmode="decimal"></div>
+      <div class="field"><label>慢性病 / 手术史</label><input id="bConditions" placeholder="高血压 8 年；2019 年胆囊切除"></div>
+      <div class="field"><label>过敏史</label><input id="bAllergy" placeholder="青霉素过敏"></div>
+      <div class="field"><label>家族史</label><input id="bFamily" placeholder="父亲脑梗，母亲糖尿病"></div>
+      <div class="grid2">
+        <div class="field"><label>抽烟喝酒</label><input id="bHabit" placeholder="已戒烟，偶尔喝酒"></div>
+        <div class="field"><label>作息</label><input id="bSleep" placeholder="晚 10 点睡，早 6 点起"></div>
+      </div>
+      <button class="primary" id="btnSaveBasic">保存基础信息</button>
+    </div>
+
+    <div class="card">
+      <h2>用药与补品</h2>
+      <div id="medEditor"></div>
+      <div class="field" style="margin-top:12px"><label>名称</label><input id="mName" placeholder="苯磺酸氨氯地平"></div>
+      <div class="grid2">
+        <div class="field"><label>剂量</label><input id="mDose" placeholder="5mg"></div>
+        <div class="field"><label>时间</label>
+          <select id="mTime"><option>早饭后</option><option>午饭后</option><option>晚饭后</option>
+          <option>睡前</option><option>空腹</option><option>其他</option></select></div>
+      </div>
+      <div class="field"><label>用途</label><input id="mUse" placeholder="降压"></div>
+      <div class="field"><label>成分关键词（逗号分隔，用于查重复）</label><input id="mIng" placeholder="钙, 维生素D"></div>
+      <button class="primary" id="btnAddMed">加一条</button>
+      <p class="hint" style="margin-top:10px">成分关键词填了才会参与重复成分检查。成分重叠不代表一定有问题，系统只提示，最终请听药师的。</p>
+    </div>
+
+    <div class="card">
+      <h2>饮食喜好</h2>
+      <p class="hint" style="margin:0 0 12px">这里填的内容会直接过滤每天的三餐，忌口和限制填了才生效。</p>
+      <div class="field"><label>爱吃</label><textarea id="dLike" rows="2" placeholder="面食、炖菜、鱼"></textarea></div>
+      <div class="field"><label>不爱吃 / 忌口</label><textarea id="dHate" rows="2" placeholder="不爱喝牛奶，不吃辣"></textarea></div>
+      <div class="field"><label>食物过敏</label><input id="dAllergy" placeholder="海鲜"></div>
+      <div class="grid2">
+        <div class="field"><label>口味</label><input id="dTaste" placeholder="偏咸"></div>
+        <div class="field"><label>牙口 / 吞咽</label><input id="dChew" placeholder="假牙，硬的吃不了"></div>
+      </div>
+      <div class="field"><label>饮食限制（医生交代的）</label><input id="dLimit" placeholder="低钠、控糖"></div>
+      <button class="primary" id="btnSaveDiet">保存饮食喜好</button>
+    </div>
+
+    <div class="card">
+      <h2>体检指标（带年份，方便明年对比）</h2>
+      <div id="labList"></div>
+      <div class="grid2" style="margin-top:12px">
+        <div class="field"><label>日期</label><input id="lDate" type="date"></div>
+        <div class="field"><label>项目</label><input id="lName" placeholder="低密度脂蛋白"></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>结果</label><input id="lValue" placeholder="3.8"></div>
+        <div class="field"><label>单位</label><input id="lUnit" placeholder="mmol/L"></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>参考范围</label><input id="lRef" placeholder="&lt;3.4"></div>
+        <div class="field"><label>判定</label>
+          <select id="lFlag"><option>正常</option><option>偏高</option><option>偏低</option><option>待复查</option></select></div>
+      </div>
+      <button class="primary" id="btnAddLab">加一条</button>
+    </div>
+  </section>
+
+  <section id="tab-files" class="hidden">
+    <div class="card" style="border-color:var(--accent);background:var(--accent-bg)">
+      <h2>这个页面怎么用</h2>
+      <p class="muted" style="margin-top:0">这里是<b>资料袋</b>：体检报告、化验单、CT 片、病历、药盒，拍照或选文件存进来，按类型自动归类。</p>
+      <p class="muted">但<b>看懂这些单子的是我，不是这个页面</b>。流程是：你把原图发给我 → 我读完后给你一段「回填码」→ 粘到本页最下面 → 指标、用药、结论自动进档案。</p>
+      <p class="hint" style="margin-bottom:0">文件只存在这台设备上，不会上传。同步码里只有文件名和结论，不含图片本身。</p>
+    </div>
+
+    <div class="card">
+      <h2>加资料</h2>
+      <input type="file" id="fileUp" multiple accept="image/*,application/pdf,.doc,.docx,.txt" class="hidden">
+      <button class="primary" id="btnPickFile">选图片或文件</button>
+      <p class="hint" style="margin-top:10px">支持照片、PDF、Word。单个最大 20MB。<b>DICOM（.dcm）原始影像存得进来但我读不了</b>，要看片子请把<b>报告单</b>或<b>拍下来的胶片</b>发我。</p>
+      <p class="hint" id="fileUpHint"></p>
+    </div>
+
+    <div class="card">
+      <h2>资料袋 <span class="hint" id="fileCount" style="font-weight:400"></span></h2>
+      <div id="fileList"></div>
+      <button id="btnListFiles" style="margin-top:12px">复制待分析清单</button>
+      <p class="hint" style="margin-top:8px">复制后发给我，我会按清单逐一分析，你再把原图发过来。</p>
+    </div>
+
+    <div class="card">
+      <h2>回填分析结果</h2>
+      <p class="muted" style="margin-top:0">我给你的回填码，整段粘进来：</p>
+      <textarea id="aiBox" rows="4" placeholder='{"profile":"爸爸","labs":[{"date":"2026-09-17","name":"低密度脂蛋白","value":"3.8","unit":"mmol/L","ref":"<3.4","flag":"偏高"}],"meds":[],"summary":"……","fileNotes":[]}'></textarea>
+      <button class="primary" id="btnApplyAi" style="margin-top:10px">写入档案</button>
+      <p class="hint" id="aiHint" style="margin-top:8px">同名同日期的指标会更新，不会重复添加。</p>
+    </div>
+
+    <div class="card" id="summaryCard">
+      <h2>健康小结</h2>
+      <p class="muted" id="summaryBox" style="margin:0;white-space:pre-wrap">还没有。我分析完你的资料后会写在这里。</p>
+    </div>
+  </section>
+
+  <section id="tab-settings" class="hidden">
+    <div class="card" style="border-color:var(--warn);background:var(--warn-bg)">
+      <h2>手机上怎么装成 App</h2>
+      <p class="muted" style="margin-top:0">这个页面已经在线上了，但要不要存数据得注意两件事：</p>
+      <p class="muted"><b>1. 别在微信里直接存。</b>微信内置浏览器会清缓存，记录可能丢。点右上角「···」→ 用 Safari / 系统浏览器打开，再添加到主屏幕。</p>
+      <p class="muted"><b>2. 数据只在这台手机上。</b>你手机和爸妈手机各存各的，看不到对方的。要同步就用下面的导出 / 导入。</p>
+      <p class="hint" style="margin-bottom:0">添加到主屏幕后，图标和 App 一样，每天点开就是当天新菜谱。</p>
+    </div>
+
+    <div class="card">
+      <h2>血压判断标准</h2>
+      <div class="grid2">
+        <div class="field"><label>高压上限</label><input id="tSysMax" inputmode="numeric"></div>
+        <div class="field"><label>低压上限</label><input id="tDiaMax" inputmode="numeric"></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>高压下限</label><input id="tSysMin" inputmode="numeric"></div>
+        <div class="field"><label>低压下限</label><input id="tDiaMin" inputmode="numeric"></div>
+      </div>
+      <button class="primary" id="btnSaveTh">保存</button>
+      <p class="hint" style="margin-top:10px">默认 140 / 90，按医嘱改。这个工具不诊断，超了只会提醒去复查。</p>
+    </div>
+
+    <div class="card">
+      <h2>测量提醒</h2>
+      <div class="field"><label>血压</label><input id="rBp"></div>
+      <div class="field"><label>血糖</label><input id="rGlu"></div>
+      <div class="field"><label>体重</label><input id="rWeight"></div>
+      <button class="primary" id="btnSaveRemind">保存</button>
+    </div>
+
+    <div class="card" style="border-color:var(--accent);background:var(--accent-bg)">
+      <h2>同步到另一台手机</h2>
+      <p class="muted" style="margin-top:0">数据现在存在<b>这台手机的浏览器里</b>。想让爸妈手机上也有同一份，或换手机接着用，就生成一段同步码，微信发过去，那边粘进来。</p>
+      <div class="row">
+        <button class="primary" id="btnMakeCode" style="flex:1;min-width:130px">生成同步码</button>
+        <button id="btnCopyCode" style="flex:1;min-width:110px">复制</button>
+      </div>
+      <div class="field" style="margin-top:10px"><label>同步码</label>
+        <textarea id="codeBox" rows="3" placeholder="点上面生成；收到别人的同步码就整段粘到这里"></textarea></div>
+      <button class="primary" id="btnApplyCode">用这段同步码合并到本机</button>
+      <p class="hint" id="codeHint" style="margin-top:8px">按名字对上就更新，对不上就新增一份，不会直接删你的档案。</p>
+    </div>
+
+    <div class="card">
+      <h2>数据</h2>
+      <p class="muted" style="margin-top:0">所有数据只存在这台设备的浏览器里。换手机、换人、备份都靠导出。</p>
+      <div class="field"><label>导出口令（可留空，填了会加密）</label>
+        <input id="passphrase" type="password" placeholder="留空则导出明文 JSON"></div>
+      <button class="primary" id="btnExport">导出这份档案</button>
+      <button id="btnExportAll" style="margin-top:8px">导出全部</button>
+      <button id="btnImport" style="margin-top:8px">导入档案</button>
+      <button class="danger" id="btnDel" style="margin-top:8px">删除这份档案</button>
+      <input type="file" id="fileInput" accept=".json,.hax" class="hidden">
+      <p class="hint" style="margin-top:10px">忘了导出口令就解不开，没有后门。这是刻意的设计。</p>
+      <button id="btnRestore" style="margin-top:8px">回到最近一次自动备份</button>
+      <p class="hint" id="snapHint" style="margin-top:8px"></p>
+    </div>
+
+    <div class="card">
+      <h2>这个模板怎么用给下一个人</h2>
+      <p class="muted" style="margin-top:0">点顶部「加人」填一份新档案就行，模板本身不用改。父母是两份，以后给谁用都是再加一份。</p>
+      <button id="btnDup">复制当前档案为一份新档案</button>
+    </div>
+  </section>
+</div>
+
+  <div class="nav">
+  <div class="on" data-tab="today"><b>今</b>今日</div>
+  <div data-tab="trend"><b>势</b>趋势</div>
+  <div data-tab="profile"><b>档</b>档案</div>
+  <div data-tab="files"><b>料</b>资料</div>
+  <div data-tab="settings"><b>置</b>设置</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+"use strict";
+
+var KEY="health_assistant_v1";
+var TIMES=["早饭后","午饭后","晚饭后","睡前","空腹","其他"];
+var todayMood="";
+
+var RECIPES={
+  breakfast:[
+    {n:"小米南瓜粥 + 水煮蛋 + 拌菠菜",no:[]},
+    {n:"燕麦牛奶 + 蒸蛋羹",no:[]},
+    {n:"杂粮馒头 + 豆浆 + 拌黄瓜",no:[]},
+    {n:"山药粥 + 煮鸡蛋 + 凉拌木耳",no:[]},
+    {n:"番茄鸡蛋面（少盐）",no:["高钠"]},
+    {n:"玉米糊 + 蒸南瓜 + 白煮蛋",no:[]},
+    {n:"黑芝麻糊 + 全麦面包 + 半根香蕉",no:["高糖"]},
+    {n:"皮蛋瘦肉粥（少盐）",no:["高钠"]},
+    {n:"豆腐脑（少卤）+ 小花卷",no:["高钠"]},
+    {n:"荞麦面条 + 青菜 + 荷包蛋",no:["硬"]}
+  ],
+  lunch:[
+    {n:"杂粮饭 + 清蒸鲈鱼 + 蒜蓉油麦菜",no:[]},
+    {n:"软米饭 + 番茄炖牛腩 + 上汤娃娃菜",no:[]},
+    {n:"米饭 + 冬瓜排骨汤 + 清炒时蔬",no:["高嘌呤"]},
+    {n:"荞麦饭 + 香菇滑鸡 + 炒生菜",no:[]},
+    {n:"软米饭 + 肉末豆腐 + 炒苋菜",no:[]},
+    {n:"米饭 + 红烧带鱼（少盐）+ 拌菠菜",no:["高钠","硬"]},
+    {n:"杂粮饭 + 土豆炖牛肉 + 炒油麦菜",no:[]},
+    {n:"软米饭 + 蒸蛋羹 + 肉末豆腐 + 炒青菜",no:[]},
+    {n:"荞麦饭 + 清炒鸡丁 + 蒜蓉西兰花",no:[]},
+    {n:"米饭 + 番茄炒蛋 + 凉拌豆腐",no:[]}
+  ],
+  dinner:[
+    {n:"小米粥 + 清炒时蔬 + 蒸蛋",no:[]},
+    {n:"杂粮粥 + 凉拌豆腐 + 炒小白菜",no:[]},
+    {n:"蔬菜汤面（少盐）+ 荷包蛋",no:["高钠"]},
+    {n:"紫薯 + 热牛奶 + 拌菠菜",no:[]},
+    {n:"南瓜粥 + 蒸鸡蛋 + 炒油麦菜",no:[]},
+    {n:"米饭 + 清蒸鱼块 + 冬瓜汤",no:["高嘌呤"]},
+    {n:"荞麦粥 + 拌黄瓜 + 煮毛豆",no:[]},
+    {n:"山药排骨汤 + 炒青菜",no:["高嘌呤"]},
+    {n:"蔬菜粥 + 蒸南瓜 + 白灼虾",no:["海鲜"]},
+    {n:"豆腐蔬菜汤 + 杂粮馒头",no:[]}
+  ]
+};
+
+var TIPS=[
+  {t:"起床先在床边坐一分钟再站起来，别猛地起身",tag:""},
+  {t:"药要按时吃，别等头晕了才想起来",tag:"高血压"},
+  {t:"喝水少量多次，一次别猛灌一大杯",tag:""},
+  {t:"今天走了吗？哪怕楼下转两圈也算数",tag:""},
+  {t:"午睡别超过半小时，晚上才睡得着",tag:""},
+  {t:"血压尽量同一时间量，这样才好对比",tag:"高血压"},
+  {t:"盐少放一点，酱油和咸菜也算盐",tag:"高血压"},
+  {t:"水果放在两餐之间吃，别饭后马上吃",tag:"糖尿病"},
+  {t:"主食里掺点杂粮，血糖会平稳很多",tag:"糖尿病"},
+  {t:"早晚加件外套，出门记得戴帽子",tag:"冷"},
+  {t:"上午十点到下午四点最晒，这段时间别出门",tag:"热"},
+  {t:"天气干燥，睡前在卧室放杯水",tag:"干"}
+];
+
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){
+  return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+function pad(n){return n<10?"0"+n:""+n;}
+function today(){var d=new Date();return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());}
+function cnDate(str){var p=str.split("-");return Number(p[1])+"月"+Number(p[2])+"日";}
+function uid(){return "p"+Date.now().toString(36)+Math.floor(Math.random()*1000);}
+function toast(m){var t=document.getElementById("toast");t.textContent=m;t.classList.add("show");
+  setTimeout(function(){t.classList.remove("show");},1800);}
+function hash(s){var h=5381;for(var i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))>>>0;return h;}
+
+function blank(name){
+  return {id:uid(),name:name||"新档案",
+    basic:{age:"",gender:"",height:"",weight:"",conditions:"",allergy:"",family:"",habit:"",sleep:""},
+    meds:[],labs:[],files:[],summary:"",
+    diet:{like:"",hate:"",allergy:"",taste:"",chew:"",limit:""},
+    records:[],
+    th:{sysMax:140,diaMax:90,sysMin:90,diaMin:60},
+    remind:{bp:"晨起排尿后静坐 5 分钟量一次；晚饭前再量一次",
+            glu:"按医生交代的频率，空腹或餐后 2 小时",
+            weight:"每周一起床后称一次"}};
+}
+
+var state=load();
+function load(){
+  try{
+    var raw=localStorage.getItem(KEY);
+    if(raw){var s=JSON.parse(raw);if(s&&s.profiles&&s.profiles.length)return fix(s);}
+  }catch(e){}
+  var f=blank("爸爸"),m=blank("妈妈");
+  return {profiles:[f,m],current:f.id};
+}
+function fix(s){
+  (s.profiles||[]).forEach(function(p){
+    if(!p.files)p.files=[];
+    if(typeof p.summary!=="string")p.summary="";
+    if(!p.labs)p.labs=[];
+    if(!p.meds)p.meds=[];
+    if(!p.records)p.records=[];
+  });
+  return s;
+}
+var SNAP="health_assistant_snap";
+var lastSnapTs=0;
+function save(){
+  localStorage.setItem(KEY,JSON.stringify(state));
+  var now=Date.now();
+  if(now-lastSnapTs>6*3600*1000){lastSnapTs=now;snap();renderSnapHint();}
+}
+function snap(){
+  try{
+    var a=JSON.parse(localStorage.getItem(SNAP)||"[]");
+    a.unshift({t:Date.now(),data:JSON.stringify(state)});
+    while(a.length>5)a.pop();
+    localStorage.setItem(SNAP,JSON.stringify(a));
+  }catch(e){}
+}
+function lastSnap(){try{return (JSON.parse(localStorage.getItem(SNAP)||"[]"))[0]||null;}catch(e){return null;}}
+function snapText(){var s=lastSnap();if(!s)return "还没有自动备份";
+  var d=new Date(s.t);return "最近自动备份："+(d.getMonth()+1)+"月"+d.getDate()+"日 "+
+    pad(d.getHours())+":"+pad(d.getMinutes());}
+function renderSnapHint(){
+  var el=document.getElementById("snapHint");if(el)el.textContent=snapText();}
+function cur(){
+  var p=state.profiles.filter(function(x){return x.id===state.current;})[0];
+  if(!p){p=state.profiles[0];state.current=p.id;}
+  return p;
+}
+function recToday(){
+  var p=cur(),t=today();
+  var r=p.records.filter(function(x){return x.date===t;})[0];
+  if(!r){r={date:t,sys:"",dia:"",glu:"",weight:"",note:"",mood:""};p.records.push(r);}
+  return r;
+}
+function judge(p,sys,dia){
+  var s=Number(sys),d=Number(dia);
+  if(!s||!d)return null;
+  var th=p.th;
+  if(s>=160||d>=100)return {k:"bad",t:"明显偏高"};
+  if(s>=th.sysMax||d>=th.diaMax)return {k:"warn",t:"偏高"};
+  if(s<th.sysMin||d<th.diaMin)return {k:"warn",t:"偏低"};
+  return {k:"ok",t:"正常"};
+}
+function prevRecord(p){
+  var t=today();
+  return p.records.filter(function(x){return x.date<t&&x.sys;})
+    .sort(function(a,b){return a.date<b.date?1:-1;})[0]||null;
+}
+function checkConflict(p){
+  var out=[],map={};
+  p.meds.forEach(function(m){
+    (m.ing||"").split(/[,，、]/).forEach(function(s){
+      s=s.trim();if(!s)return;(map[s]=map[s]||[]).push(m.name);});});
+  Object.keys(map).forEach(function(k){
+    if(map[k].length>1)out.push("重复成分："+k+"　出现在 "+map[k].join("、"));});
+  return out;
+}
+
+function forbidden(p){
+  var d=p.diet||{};
+  var txt=[d.limit,d.hate,d.allergy,d.chew,(p.basic||{}).conditions].join(" ");
+  var no=[];
+  if(/低钠|少盐|控盐|高血压|降压/.test(txt))no.push("高钠");
+  if(/控糖|降糖|糖尿病|血糖/.test(txt))no.push("高糖");
+  if(/海鲜|虾|蟹|贝/.test(txt))no.push("海鲜");
+  if(/硬|假牙|牙口|吞咽|嚼不/.test(txt))no.push("硬");
+  if(/嘌呤|痛风/.test(txt))no.push("高嘌呤");
+  return no;
+}
+function pick(list,ban,seed){
+  var ok=list.filter(function(r){return !r.no.some(function(x){return ban.indexOf(x)>-1;});});
+  if(ok.length<2)ok=list;
+  return ok[seed%ok.length];
+}
+function todayMenu(p){
+  var ban=forbidden(p),d=today();
+  return {b:pick(RECIPES.breakfast,ban,hash(p.id+d)),
+          l:pick(RECIPES.lunch,ban,hash(p.id+d+"午")),
+          dn:pick(RECIPES.dinner,ban,hash(p.id+d+"晚"))};
+}
+function mondayOf(dateStr){
+  var p=dateStr.split("-"),d=new Date(+p[0],+p[1]-1,+p[2]),w=d.getDay();
+  d.setDate(d.getDate()+(w===0?-6:1-w));
+  return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+}
+function weekFocus(p){
+  var c=(p.basic&&p.basic.conditions)||"",items=[];
+  if(/高血压|血压/.test(c))items.push("高钾蔬菜（菠菜、土豆）");
+  if(/糖尿病|血糖/.test(c))items.push("高纤维杂粮（燕麦、荞麦）");
+  if(/骨质|疏松|缺钙|骨折/.test(c))items.push("豆制品和奶");
+  if(/血脂|胆固醇/.test(c))items.push("深海鱼和燕麦");
+  items=items.concat(["深绿叶菜","杂粮"]).filter(function(v,i,a){return a.indexOf(v)===i;}).slice(0,3);
+  return items.join("、");
+}
+function todayTip(p){
+  var m=new Date().getMonth()+1;
+  var season=(m>=10||m<=3)?"冷":(m>=6&&m<=8?"热":"干");
+  var c=(p.basic&&p.basic.conditions)||"";
+  var pool=TIPS.filter(function(x){
+    return x.tag===""||x.tag===season||(x.tag!=="冷"&&x.tag!=="热"&&x.tag!=="干"&&c.indexOf(x.tag)>-1);});
+  if(pool.length<3)pool=TIPS;
+  return pool[hash(p.id+today())%pool.length].t;
+}
+
+function renderToday(){
+  var p=cur(),r=recToday();
+  document.getElementById("inSys").value=r.sys||"";
+  document.getElementById("inDia").value=r.dia||"";
+  document.getElementById("inGlu").value=r.glu||"";
+  document.getElementById("inWeight").value=r.weight||"";
+  document.getElementById("inNote").value=r.note||"";
+  todayMood=r.mood||"";syncSeg();
+
+  var b=document.getElementById("todayBanner"),j=judge(p,r.sys,r.dia);
+  if(!j){
+    b.className="banner ok";
+    b.innerHTML='<div class="big">今天还没量</div><div class="muted">量完血压填上面，这里会给出判断</div>';
+  }else{
+    b.className="banner "+j.k;
+    var prev=prevRecord(p),cmp="";
+    if(prev&&prev.sys){
+      var d1=Number(r.sys)-Number(prev.sys);
+      cmp=Math.abs(d1)<=3?"和上次差不多":(d1>0?"比上次高 "+d1:"比上次低 "+Math.abs(d1));}
+    b.innerHTML='<div class="big">'+esc(r.sys)+" / "+esc(r.dia)+"　"+j.t+'</div>'+
+      '<div class="muted">'+(cmp?esc(cmp)+"　":"")+
+      (j.k==="ok"?"保持住":(j.k==="bad"?"建议尽快去医院复查":"连着几天这样就去复查"))+'</div>';
+  }
+
+  var box=document.getElementById("medList");
+  if(!p.meds.length)box.innerHTML='<p class="muted" style="margin:0">还没填用药，去「档案」里加</p>';
+  else{
+    var html="";
+    TIMES.forEach(function(t){
+      var ms=p.meds.filter(function(m){return m.time===t;});
+      if(!ms.length)return;
+      html+='<div style="margin-bottom:10px"><h3>'+t+'</h3>';
+      ms.forEach(function(m){
+        html+='<div class="list-item"><div><div class="t">'+esc(m.name)+(m.dose?" "+esc(m.dose):"")+'</div>'+
+          '<div class="s">'+esc(m.use||"")+'</div></div></div>';});
+      html+='</div>';});
+    box.innerHTML=html;
+  }
+  var cf=checkConflict(p);
+  document.getElementById("medConflict").innerHTML=cf.length?
+    '<div class="banner warn" style="margin:12px 0 0">'+cf.map(esc).join("<br>")+
+    '<br>系统只提示，不判断。拿这张单子去问药师。</div>':"";
+
+  var mn=todayMenu(p);
+  document.getElementById("menuBox").innerHTML=
+    '<div class="meal"><div class="when">早</div><div class="what">'+esc(mn.b.n)+'</div></div>'+
+    '<div class="meal"><div class="when">午</div><div class="what">'+esc(mn.l.n)+'</div></div>'+
+    '<div class="meal"><div class="when">晚</div><div class="what">'+esc(mn.dn.n)+'</div></div>';
+  document.getElementById("weekFocus").textContent=
+    "本周重点补："+weekFocus(p)+"（"+cnDate(mondayOf(today()))+"这周）";
+  document.getElementById("tipBox").textContent=todayTip(p);
+
+  var rm=p.remind||{};
+  document.getElementById("measureBox").innerHTML=
+    '<div class="list-item"><div><div class="t">血压</div><div class="s">'+esc(rm.bp||"")+'</div></div></div>'+
+    '<div class="list-item"><div><div class="t">血糖</div><div class="s">'+esc(rm.glu||"")+'</div></div></div>'+
+    '<div class="list-item"><div><div class="t">体重</div><div class="s">'+esc(rm.weight||"")+'</div></div></div>';
+}
+
+function syncSeg(){
+  var bs=document.querySelectorAll("#segMood button");
+  for(var i=0;i<bs.length;i++)bs[i].className=(bs[i].getAttribute("data-v")===todayMood)?"on":"";
+}
+
+function renderTrend(){
+  var p=cur();
+  var recs=p.records.filter(function(x){return x.sys&&x.dia;})
+    .sort(function(a,b){return a.date<b.date?-1:1;}).slice(-14);
+  var c=document.getElementById("chart");
+  if(recs.length<2)c.innerHTML='<p class="muted" style="margin:0">至少两次记录才画得出趋势</p>';
+  else{
+    var W=700,H=260,pl=44,pr=14,pt=16,pb=32,vals=[];
+    recs.forEach(function(r){vals.push(Number(r.sys));vals.push(Number(r.dia));});
+    var mx=Math.max.apply(null,vals)+10,mn=Math.min.apply(null,vals)-10;
+    if(mx-mn<30){mx+=15;mn-=15;}
+    var X=function(i){return pl+i*(W-pl-pr)/(recs.length-1);};
+    var Y=function(v){return pt+(mx-v)*(H-pt-pb)/(mx-mn);};
+    var svg='<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="display:block">';
+    [mx,Math.round((mx+mn)/2),mn].forEach(function(v){
+      svg+='<line x1="'+pl+'" y1="'+Y(v)+'" x2="'+(W-pr)+'" y2="'+Y(v)+'" stroke="#e4e3de" stroke-width="0.5"/>'+
+        '<text x="'+(pl-8)+'" y="'+(Y(v)+4)+'" text-anchor="end" font-size="12" fill="#9a9ea5">'+v+'</text>';});
+    ["sys","dia"].forEach(function(k,idx){
+      svg+='<path d="'+recs.map(function(r,i){return (i?"L":"M")+X(i)+" "+Y(Number(r[k]));}).join(" ")+
+        '" fill="none" stroke="'+(idx?"#378ADD":"#D85A30")+'" stroke-width="2"/>';});
+    recs.forEach(function(r,i){
+      var j=judge(p,r.sys,r.dia);
+      svg+='<text x="'+X(i)+'" y="'+(H-9)+'" text-anchor="middle" font-size="11" fill="#9a9ea5">'+cnDate(r.date)+'</text>'+
+        '<circle cx="'+X(i)+'" cy="'+Y(Number(r.sys))+'" r="4" fill="'+
+        (j&&j.k==="ok"?"#1D9E75":(j&&j.k==="bad"?"#E24B4A":"#EF9F27"))+'/>';});
+    svg+='</svg><p class="hint" style="margin:8px 0 0">'+
+      '<span style="color:#D85A30">—</span> 高压　<span style="color:#378ADD">—</span> 低压</p>';
+    c.innerHTML=svg;
+  }
+  var all=p.records.slice().sort(function(a,b){return a.date<b.date?1:-1;});
+  var h='<tr><th>日期</th><th>血压</th><th>血糖</th><th>感觉</th></tr>';
+  if(!all.length)h+='<tr><td colspan="4" class="muted">还没有记录</td></tr>';
+  all.forEach(function(r){
+    var j=judge(p,r.sys,r.dia);
+    h+='<tr><td>'+cnDate(r.date)+'</td><td>'+
+      (r.sys?esc(r.sys)+"/"+esc(r.dia)+' <span class="pill '+(j?j.k:"")+'">'+esc(j?j.t:"")+'</span>':"—")+
+      '</td><td>'+(r.glu?esc(r.glu):"—")+'</td><td>'+(r.mood?esc(r.mood):"—")+'</td></tr>';});
+  document.getElementById("recTable").innerHTML=h;
+}
+
+function renderProfile(){
+  var p=cur(),b=p.basic||{},d=p.diet||{};
+  document.getElementById("titleName").textContent=p.name||"健康小助手";
+  document.getElementById("pName").value=p.name||"";
+  document.getElementById("bAge").value=b.age||"";
+  document.getElementById("bGender").value=b.gender||"";
+  document.getElementById("bHeight").value=b.height||"";
+  document.getElementById("bWeight").value=b.weight||"";
+  document.getElementById("bConditions").value=b.conditions||"";
+  document.getElementById("bAllergy").value=b.allergy||"";
+  document.getElementById("bFamily").value=b.family||"";
+  document.getElementById("bHabit").value=b.habit||"";
+  document.getElementById("bSleep").value=b.sleep||"";
+
+  var mh="";
+  if(!p.meds.length)mh='<p class="muted" style="margin:0">还没加</p>';
+  p.meds.forEach(function(m,i){
+    mh+='<div class="list-item"><div><div class="t">'+esc(m.name)+(m.dose?" "+esc(m.dose):"")+
+      ' <span class="pill">'+esc(m.time)+'</span></div><div class="s">'+esc(m.use||"")+
+      (m.ing?"　成分："+esc(m.ing):"")+'</div></div>'+
+      '<button data-delmed="'+i+'" class="danger" style="width:auto;min-height:38px;padding:8px 14px">删</button></div>';});
+  document.getElementById("medEditor").innerHTML=mh;
+
+  var lh="";
+  if(!p.labs.length)lh='<p class="muted" style="margin:0">还没加。体检报告上的异常项建议都录进来，明年能对比</p>';
+  p.labs.slice().sort(function(a,b2){return (a.date||"")<(b2.date||"")?1:-1;}).forEach(function(l,i){
+    var cls=l.flag==="正常"?"ok":(l.flag==="待复查"?"warn":"bad");
+    lh+='<div class="list-item"><div><div class="t">'+esc(l.name)+' <span class="pill '+cls+'">'+esc(l.flag)+'</span></div>'+
+      '<div class="s">'+esc(l.date)+"　"+esc(l.value)+" "+esc(l.unit||"")+"　参考 "+esc(l.ref||"")+'</div></div>'+
+      '<button data-dellab="'+i+'" class="danger" style="width:auto;min-height:38px;padding:8px 14px">删</button></div>';});
+  document.getElementById("labList").innerHTML=lh;
+
+  document.getElementById("dLike").value=d.like||"";
+  document.getElementById("dHate").value=d.hate||"";
+  document.getElementById("dAllergy").value=d.allergy||"";
+  document.getElementById("dTaste").value=d.taste||"";
+  document.getElementById("dChew").value=d.chew||"";
+  document.getElementById("dLimit").value=d.limit||"";
+
+  var t=p.th,rm=p.remind||{};
+  document.getElementById("tSysMax").value=t.sysMax;
+  document.getElementById("tDiaMax").value=t.diaMax;
+  document.getElementById("tSysMin").value=t.sysMin;
+  document.getElementById("tDiaMin").value=t.diaMin;
+  document.getElementById("rBp").value=rm.bp||"";
+  document.getElementById("rGlu").value=rm.glu||"";
+  document.getElementById("rWeight").value=rm.weight||"";
+}
+
+function renderAll(){renderToday();renderTrend();renderProfile();renderFiles();}
+
+/* ================= 资料袋：图片 / 文件 / CT 影像 ================= */
+var CATS=["体检报告","化验单","CT影像","病历","用药","其他"];
+var CATICON={"体检报告":"📋","化验单":"🧪","CT影像":"🩻","病历":"📄","用药":"💊","其他":"📎"};
+var FDB=null,thumbUrls=[];
+function fdbOpen(){
+  if(FDB)return Promise.resolve(FDB);
+  return new Promise(function(res,rej){
+    if(!window.indexedDB){rej(new Error("这个浏览器不支持存文件"));return;}
+    var r=indexedDB.open("health_files",1);
+    r.onupgradeneeded=function(){if(!r.result.objectStoreNames.contains("blob"))r.result.createObjectStore("blob");};
+    r.onsuccess=function(){FDB=r.result;res(FDB);};
+    r.onerror=function(){rej(r.error||new Error("打不开本地文件库"));};
+  });
+}
+function fdbPut(id,blob){return fdbOpen().then(function(db){return new Promise(function(res,rej){
+  var t=db.transaction("blob","readwrite");t.objectStore("blob").put(blob,id);
+  t.oncomplete=function(){res();};t.onerror=function(){rej(t.error);};});});}
+function fdbGet(id){return fdbOpen().then(function(db){return new Promise(function(res,rej){
+  var t=db.transaction("blob","readonly"),q=t.objectStore("blob").get(id);
+  q.onsuccess=function(){res(q.result||null);};q.onerror=function(){rej(q.error);};});});}
+function fdbDel(id){return fdbOpen().then(function(db){return new Promise(function(res,rej){
+  var t=db.transaction("blob","readwrite");t.objectStore("blob").delete(id);
+  t.oncomplete=function(){res();};t.onerror=function(){rej(t.error);};});});}
+function guessCat(name,mime){
+  var s=String(name||"").toLowerCase();
+  if(/dcm|dicom|\.ct|mri|xray|x光|影像|胶片|片子/.test(s))return "CT影像";
+  if(/化验|血常规|生化|尿常|血脂|血糖|肝功|肾功|甲功/.test(s))return "化验单";
+  if(/体检|查体|健康检查/.test(s))return "体检报告";
+  if(/病历|出院|门诊|住院|诊断|病案|小结/.test(s))return "病历";
+  if(/药|处方|prescription|说明书|维生素|钙|补/.test(s))return "用药";
+  if(/报告/.test(s))return "体检报告";
+  return "其他";
+}
+function fsize(n){n=Number(n)||0;return n<1024?n+"B":(n<1048576?(n/1024).toFixed(0)+"KB":(n/1048576).toFixed(1)+"MB");}
+function renderFiles(){
+  var box=document.getElementById("fileList");
+  if(!box)return;
+  var p=cur(),fs=p.files||[];
+  thumbUrls.forEach(function(u){try{URL.revokeObjectURL(u);}catch(e){}});
+  thumbUrls=[];
+  document.getElementById("fileCount").textContent=fs.length?("共 "+fs.length+" 份"):"";
+  var pc=document.getElementById("profileFileCount");
+  if(pc)pc.textContent=fs.length?(fs.length+" 份"):"还是空的";
+  document.getElementById("summaryBox").textContent=p.summary||"还没有。我分析完你的资料后会写在这里。";
+  if(!fs.length){
+    box.innerHTML='<p class="muted" style="margin:0">还没有资料。把体检单、化验单、CT 报告拍下来存进来，我会按类型归好。</p>';
+    return;
+  }
+  box.innerHTML=fs.map(function(f,i){
+    return '<div class="frow">'+
+      '<div class="fthumb" data-thumb="'+esc(f.id)+'">'+(CATICON[f.cat]||"📎")+'</div>'+
+      '<div class="fmeta">'+
+        '<div class="fname">'+esc(f.name)+'</div>'+
+        '<div class="fsub">'+esc(f.date||"")+'　'+fsize(f.size)+'</div>'+
+        '<select class="fcat" data-cat="'+i+'">'+CATS.map(function(c){
+          return '<option'+(c===f.cat?" selected":"")+'>'+c+'</option>';}).join("")+'</select>'+
+        (f.note?'<div class="fnote">'+esc(f.note)+'</div>':'')+
+      '</div>'+
+      '<button class="fdel" data-delf="'+i+'">删</button>'+
+    '</div>';}).join("");
+  fs.forEach(function(f){
+    if(String(f.type||"").indexOf("image")!==0)return;
+    var el=box.querySelector('[data-thumb="'+f.id+'"]');
+    if(!el)return;
+    fdbGet(f.id).then(function(b){
+      if(!b)return;
+      var u=URL.createObjectURL(b);thumbUrls.push(u);
+      el.innerHTML='<img src="'+u+'" alt="">';
+    }).catch(function(){});
+  });
+}
+function applyAiPatch(text){
+  var o=JSON.parse(text);
+  if(!o||typeof o!=="object")throw new Error("不是一段有效的回填码");
+  var p=cur();
+  if(o.profile)p=state.profiles.filter(function(x){return x.name===o.profile;})[0]||p;
+  if(!p.files)p.files=[];
+  var a={lab:0,med:0,note:0};
+  (o.labs||[]).forEach(function(l){
+    if(!l||!l.name)return;
+    l.date=l.date||today();
+    var ex=p.labs.filter(function(x){return x.name===l.name&&x.date===l.date;})[0];
+    if(ex){ex.value=l.value==null?ex.value:l.value;if(l.unit)ex.unit=l.unit;if(l.ref)ex.ref=l.ref;if(l.flag)ex.flag=l.flag;}
+    else{p.labs.push({date:l.date,name:l.name,value:l.value==null?"":String(l.value),
+      unit:l.unit||"",ref:l.ref||"",flag:l.flag||"正常"});a.lab++;}
+  });
+  (o.meds||[]).forEach(function(m){
+    if(!m||!m.name)return;
+    var ex=p.meds.filter(function(x){return x.name===m.name;})[0];
+    if(ex){if(m.dose)ex.dose=m.dose;if(m.time)ex.time=m.time;if(m.use)ex.use=m.use;if(m.ing)ex.ing=m.ing;}
+    else{p.meds.push({name:m.name,dose:m.dose||"",time:m.time||"早饭后",use:m.use||"",ing:m.ing||""});a.med++;}
+  });
+  (o.fileNotes||[]).forEach(function(fn){
+    if(!fn||!fn.name)return;
+    var f=(p.files||[]).filter(function(x){return x.name===fn.name;})[0];
+    if(f){f.note=fn.note||"";a.note++;}
+  });
+  if(o.summary)p.summary=String(o.summary);
+  return a;
+}
+
+function genCard(){
+  var p=cur(),r=recToday(),j=judge(p,r.sys,r.dia),d=new Date();
+  var wk=["周日","周一","周二","周三","周四","周五","周六"][d.getDay()];
+  var L=["【"+(d.getMonth()+1)+"月"+d.getDate()+"日 "+wk+" · "+p.name+"】"];
+  if(j){
+    var prev=prevRecord(p),cmp="";
+    if(prev&&prev.sys){
+      var df=Number(r.sys)-Number(prev.sys);
+      cmp=Math.abs(df)<=3?"，和上次差不多":(df>0?"，比上次高 "+df:"，比上次低 "+Math.abs(df));}
+    L.push("血压 "+r.sys+" / "+r.dia+"　"+j.t+cmp);
+    if(j.k!=="ok")L.push("（连着几天这样就去医院看看，别自己调药）");
+  }else L.push("血压：今天还没量");
+  if(r.glu)L.push("血糖 "+r.glu);
+  if(r.mood)L.push("感觉："+r.mood);
+  if(r.note)L.push("记录："+r.note);
+
+  var mn=todayMenu(p);
+  L.push("");
+  L.push("今天吃：");
+  L.push("早　"+mn.b.n);
+  L.push("午　"+mn.l.n);
+  L.push("晚　"+mn.dn.n);
+
+  if(p.meds.length){
+    L.push("");L.push("今天吃药：");
+    TIMES.forEach(function(t){
+      var g=p.meds.filter(function(m){return m.time===t;});
+      if(g.length)L.push("· "+t+"　"+g.map(function(m){return m.name+(m.dose?" "+m.dose:"");}).join("、"));});
+  }
+  var cf=checkConflict(p);
+  if(cf.length){L.push("");L.push("提醒："+cf.join("；")+"　去问药师确认");}
+  L.push("");
+  L.push("要量的：血压 — "+((p.remind||{}).bp||""));
+  L.push(todayTip(p)+"。");
+  document.getElementById("cardText").value=L.join("\n");
+}
+
+function download(name,text){
+  var b=new Blob([text],{type:"application/json;charset=utf-8"}),a=document.createElement("a");
+  a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();
+  setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},0);
+}
+function b64(buf){var s="",u=new Uint8Array(buf);for(var i=0;i<u.length;i++)s+=String.fromCharCode(u[i]);return btoa(s);}
+function unb64(str){var s=atob(str),u=new Uint8Array(s.length);for(var i=0;i<s.length;i++)u[i]=s.charCodeAt(i);return u.buffer;}
+function encKey(pass,salt){
+  return crypto.subtle.importKey("raw",new TextEncoder().encode(pass),{name:"PBKDF2"},false,["deriveKey"])
+    .then(function(k){return crypto.subtle.deriveKey({name:"PBKDF2",salt:salt,iterations:100000,hash:"SHA-256"},
+      k,{name:"AES-GCM",length:256},false,["encrypt","decrypt"]);});
+}
+function encrypt(data,pass){
+  var salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12));
+  return encKey(pass,salt).then(function(k){
+    return crypto.subtle.encrypt({name:"AES-GCM",iv:iv},k,new TextEncoder().encode(data));})
+    .then(function(ct){return JSON.stringify({v:1,enc:true,salt:b64(salt),iv:b64(iv),data:b64(ct)});});
+}
+function decrypt(pkg,pass){
+  return encKey(pass,unb64(pkg.salt)).then(function(k){
+    return crypto.subtle.decrypt({name:"AES-GCM",iv:unb64(pkg.iv)},k,unb64(pkg.data));})
+    .then(function(pt){return new TextDecoder().decode(pt);});
+}
+function doExport(obj,fname){
+  var pass=document.getElementById("passphrase").value,raw=JSON.stringify(obj,null,2);
+  if(!pass||!crypto.subtle){download(fname+".json",raw);toast(!pass?"已导出明文，注意保管":"不支持加密，改成了明文");return;}
+  encrypt(raw,pass).then(function(s){download(fname+".hax",s);toast("已加密导出");})
+    .catch(function(){download(fname+".json",raw);toast("加密失败，改成了明文");});
+}
+function doImport(text){
+  var obj=null;
+  try{obj=JSON.parse(text);}catch(e){toast("文件读不出来");return;}
+  var finish=function(o){
+    var list=o&&o.profiles?o.profiles:[o],n=0;
+    list.forEach(function(p){if(!p||!p.name)return;p.id=uid();state.profiles.push(p);n++;});
+    if(!n){toast("档案格式不对");return;}
+    save();renderAll();genCard();toast("导入了 "+n+" 份档案");};
+  if(obj&&obj.enc){
+    var pass=prompt("这份档案加密了，请输入当时的导出口令：");
+    if(!pass)return;
+    decrypt(obj,pass).then(function(t){finish(JSON.parse(t));}).catch(function(){toast("口令不对，解不开");});
+  }else finish(obj);
+}
+
+/* ---- 同步码：把整份数据压成一段文本，微信发过去，另一台手机粘进来 ---- */
+function u8(s){return new TextEncoder().encode(s);}
+function b64u(arr){var s="";for(var i=0;i<arr.length;i++)s+=String.fromCharCode(arr[i]);
+  return btoa(s).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");}
+function unb64u(str){var s=str.replace(/-/g,"+").replace(/_/g,"/");
+  while(s.length%4)s+="=";var r=atob(s),u=new Uint8Array(r.length);
+  for(var i=0;i<r.length;i++)u[i]=r.charCodeAt(i);return u;}
+function makeCode(){
+  var raw=JSON.stringify(state);
+  if(!window.CompressionStream)return Promise.resolve("HA1-"+b64u(u8(raw)));
+  var cs=new CompressionStream("deflate-raw"),w=cs.writable.getWriter();
+  w.write(u8(raw));w.close();
+  return new Response(cs.readable).arrayBuffer().then(function(b){
+    return "HAZ-"+b64u(new Uint8Array(b));});
+}
+function readCode(code){
+  code=String(code||"").trim().replace(/\s+/g,"");
+  if(!code)return Promise.reject(new Error("空的"));
+  if(/^HAZ-/.test(code)){
+    if(!window.DecompressionStream)return Promise.reject(new Error("这个浏览器不支持解压，换 Safari 16.4+ 或新版 Chrome"));
+    var ds=new DecompressionStream("deflate-raw"),w=ds.writable.getWriter();
+    w.write(unb64u(code.slice(4)));w.close();
+    return new Response(ds.readable).arrayBuffer().then(function(b){
+      return new TextDecoder().decode(b);});}
+  if(/^HA1-/.test(code))return Promise.resolve(new TextDecoder().decode(unb64u(code.slice(4))));
+  return Promise.resolve(code);
+}
+function mergeState(o){
+  if(!o||!o.profiles)throw new Error("格式不对");
+  var n=0;
+  o.profiles.forEach(function(np){
+    if(!np||!np.name)return;
+    var ex=state.profiles.filter(function(x){return x.name===np.name;})[0];
+    if(ex){
+      var map={};ex.records.forEach(function(r){map[r.date]=r;});
+      (np.records||[]).forEach(function(r){map[r.date]=r;});
+      ex.records=Object.keys(map).sort().map(function(k){return map[k];});
+      if(np.basic)ex.basic=np.basic;
+      if(np.meds)ex.meds=np.meds;
+      if(np.labs)ex.labs=np.labs;
+      if(np.diet)ex.diet=np.diet;
+      if(np.th)ex.th=np.th;
+      if(np.remind)ex.remind=np.remind;
+    }else{np.id=uid();state.profiles.push(np);}
+    if(!np.files)np.files=[];
+    if(typeof np.summary!=="string")np.summary="";
+    n++;});
+  if(!n)throw new Error("里面没有档案");
+  return n;
+}
+function applyCode(text){
+  return Promise.resolve().then(function(){return readCode(text);}).then(function(s){
+    var n=mergeState(JSON.parse(s));
+    save();renderAll();genCard();
+    return n;});
+}
+
+function switchProfile(){
+  var msg="现在看的是「"+cur().name+"」，输入序号切换：\n\n"+
+    state.profiles.map(function(p,i){return (i+1)+". "+p.name;}).join("\n");
+  var v=prompt(msg);
+  if(!v)return;
+  var i=parseInt(v,10)-1;
+  if(i>=0&&i<state.profiles.length){state.current=state.profiles[i].id;save();renderAll();genCard();}
+}
+
+var TABS=["today","trend","profile","files","settings"];
+function showTab(t){
+  TABS.forEach(function(n){document.getElementById("tab-"+n).classList.toggle("hidden",n!==t);});
+  var tabs=document.querySelectorAll(".tab");
+  for(var i=0;i<tabs.length;i++)tabs[i].className="tab"+(tabs[i].getAttribute("data-tab")===t?" on":"");
+  var navs=document.querySelectorAll(".nav div");
+  for(var k=0;k<navs.length;k++)navs[k].className=(navs[k].getAttribute("data-tab")===t?"on":"");
+  window.scrollTo(0,0);
+}
+(function(){
+  var tabs=document.querySelectorAll(".tab");
+  for(var i=0;i<tabs.length;i++)tabs[i].addEventListener("click",function(){showTab(this.getAttribute("data-tab"));});
+  var navs=document.querySelectorAll(".nav div");
+  for(var k=0;k<navs.length;k++)navs[k].addEventListener("click",function(){showTab(this.getAttribute("data-tab"));});
+})();
+
+document.getElementById("btnSwitch").addEventListener("click",switchProfile);
+document.getElementById("btnNew").addEventListener("click",function(){
+  var n=prompt("这位是谁？（比如：妈妈、岳父、我自己）");
+  if(!n)return;
+  var p=blank(n);state.profiles.push(p);state.current=p.id;save();renderAll();genCard();
+  toast("档案建好了，去「档案」里填信息");});
+document.getElementById("btnDup").addEventListener("click",function(){
+  var n=prompt("复制成谁的新档案？");
+  if(!n)return;
+  var c=JSON.parse(JSON.stringify(cur()));c.id=uid();c.name=n;c.records=[];
+  state.profiles.push(c);state.current=c.id;save();renderAll();toast("已复制，记得改成他自己的信息");});
+document.getElementById("btnDel").addEventListener("click",function(){
+  if(state.profiles.length<=1){toast("至少留一份");return;}
+  if(!confirm("删掉「"+cur().name+"」这份档案？删了就找不回来了。"))return;
+  state.profiles=state.profiles.filter(function(x){return x.id!==state.current;});
+  state.current=state.profiles[0].id;save();renderAll();genCard();toast("已删除");});
+
+var moodBtns=document.querySelectorAll("#segMood button");
+for(var i=0;i<moodBtns.length;i++){
+  moodBtns[i].addEventListener("click",function(){
+    todayMood=(todayMood===this.getAttribute("data-v"))?"":this.getAttribute("data-v");syncSeg();});}
+
+document.getElementById("btnSave").addEventListener("click",function(){
+  var p=cur(),r=recToday();
+  r.sys=document.getElementById("inSys").value.trim();
+  r.dia=document.getElementById("inDia").value.trim();
+  r.glu=document.getElementById("inGlu").value.trim();
+  r.weight=document.getElementById("inWeight").value.trim();
+  r.note=document.getElementById("inNote").value.trim();
+  r.mood=todayMood;
+  if(r.weight)p.basic.weight=r.weight;
+  save();renderToday();renderTrend();genCard();
+  var h=document.getElementById("saveHint");h.textContent="存好了";
+  setTimeout(function(){h.textContent="";},2000);});
+document.getElementById("btnGen").addEventListener("click",function(){genCard();toast("生成好了");});
+document.getElementById("btnCopy").addEventListener("click",function(){
+  var ta=document.getElementById("cardText");
+  if(!ta.value)genCard();
+  ta.select();ta.setSelectionRange(0,999999);
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(ta.value).then(function(){toast("复制好了，去微信粘贴");});
+  }else{try{document.execCommand("copy");toast("复制好了");}catch(e){toast("复制失败，手动选中吧");}}});
+
+document.getElementById("btnSaveBasic").addEventListener("click",function(){
+  var p=cur();
+  p.name=document.getElementById("pName").value.trim()||p.name;
+  p.basic={age:document.getElementById("bAge").value.trim(),
+    gender:document.getElementById("bGender").value.trim(),
+    height:document.getElementById("bHeight").value.trim(),
+    weight:document.getElementById("bWeight").value.trim(),
+    conditions:document.getElementById("bConditions").value.trim(),
+    allergy:document.getElementById("bAllergy").value.trim(),
+    family:document.getElementById("bFamily").value.trim(),
+    habit:document.getElementById("bHabit").value.trim(),
+    sleep:document.getElementById("bSleep").value.trim()};
+  save();renderToday();renderProfile();genCard();toast("基础信息已保存");});
+document.getElementById("btnAddMed").addEventListener("click",function(){
+  var n=document.getElementById("mName").value.trim();
+  if(!n){toast("至少填个药名");return;}
+  cur().meds.push({name:n,dose:document.getElementById("mDose").value.trim(),
+    time:document.getElementById("mTime").value,use:document.getElementById("mUse").value.trim(),
+    ing:document.getElementById("mIng").value.trim()});
+  ["mName","mDose","mUse","mIng"].forEach(function(id){document.getElementById(id).value="";});
+  save();renderProfile();renderToday();genCard();toast("加上了");});
+document.getElementById("btnAddLab").addEventListener("click",function(){
+  var n=document.getElementById("lName").value.trim();
+  if(!n){toast("填个项目名称");return;}
+  cur().labs.push({date:document.getElementById("lDate").value||today(),name:n,
+    value:document.getElementById("lValue").value.trim(),unit:document.getElementById("lUnit").value.trim(),
+    ref:document.getElementById("lRef").value.trim(),flag:document.getElementById("lFlag").value});
+  ["lName","lValue","lUnit","lRef"].forEach(function(id){document.getElementById(id).value="";});
+  save();renderProfile();toast("加上了");});
+document.getElementById("btnSaveDiet").addEventListener("click",function(){
+  cur().diet={like:document.getElementById("dLike").value.trim(),
+    hate:document.getElementById("dHate").value.trim(),
+    allergy:document.getElementById("dAllergy").value.trim(),
+    taste:document.getElementById("dTaste").value.trim(),
+    chew:document.getElementById("dChew").value.trim(),
+    limit:document.getElementById("dLimit").value.trim()};
+  save();renderToday();genCard();toast("饮食喜好已保存，三餐已按新忌口重算");});
+document.getElementById("btnSaveTh").addEventListener("click",function(){
+  var t=cur().th;
+  t.sysMax=Number(document.getElementById("tSysMax").value)||140;
+  t.diaMax=Number(document.getElementById("tDiaMax").value)||90;
+  t.sysMin=Number(document.getElementById("tSysMin").value)||90;
+  t.diaMin=Number(document.getElementById("tDiaMin").value)||60;
+  save();renderToday();renderTrend();toast("标准已更新");});
+document.getElementById("btnSaveRemind").addEventListener("click",function(){
+  cur().remind={bp:document.getElementById("rBp").value.trim(),
+    glu:document.getElementById("rGlu").value.trim(),weight:document.getElementById("rWeight").value.trim()};
+  save();renderToday();toast("提醒已保存");});
+
+document.getElementById("medEditor").addEventListener("click",function(e){
+  var i=e.target.getAttribute&&e.target.getAttribute("data-delmed");
+  if(i!=null){cur().meds.splice(Number(i),1);save();renderProfile();renderToday();genCard();}});
+document.getElementById("labList").addEventListener("click",function(e){
+  var i=e.target.getAttribute&&e.target.getAttribute("data-dellab");
+  if(i!=null){
+    var p=cur(),sorted=p.labs.slice().sort(function(a,b){return (a.date||"")<(b.date||"")?1:-1;});
+    var v=sorted[Number(i)];p.labs=p.labs.filter(function(x){return x!==v;});save();renderProfile();}});
+
+document.getElementById("btnExport").addEventListener("click",function(){doExport(cur(),"健康档案-"+cur().name);});
+document.getElementById("btnExportAll").addEventListener("click",function(){doExport(state,"健康档案-全部");});
+document.getElementById("btnImport").addEventListener("click",function(){document.getElementById("fileInput").click();});
+document.getElementById("btnMakeCode").addEventListener("click",function(){
+  var hint=document.getElementById("codeHint");
+  hint.textContent="正在压缩…";
+  makeCode().then(function(code){
+    document.getElementById("codeBox").value=code;
+    hint.textContent="生成好了，"+code.length+" 个字符。整段复制发微信，对方粘进去点下面的按钮。";
+  }).catch(function(e){hint.textContent="生成失败："+e.message;});});
+document.getElementById("btnCopyCode").addEventListener("click",function(){
+  var ta=document.getElementById("codeBox");
+  if(!ta.value){toast("先点生成");return;}
+  ta.select();ta.setSelectionRange(0,999999);
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(ta.value).then(function(){toast("复制好了，去微信粘贴");});
+  }else{try{document.execCommand("copy");toast("复制好了");}catch(e){toast("复制失败，手动选中吧");}}});
+document.getElementById("btnApplyCode").addEventListener("click",function(){
+  var v=document.getElementById("codeBox").value.trim(),hint=document.getElementById("codeHint");
+  if(!v){toast("先把同步码粘进来");return;}
+  applyCode(v).then(function(n){
+    hint.textContent="合并了 "+n+" 份档案";toast("同步好了");})
+    .catch(function(e){hint.textContent="读不出来："+e.message;});});
+document.getElementById("btnGoFiles").addEventListener("click",function(){showTab("files");});
+document.getElementById("btnPickFile").addEventListener("click",function(){
+  document.getElementById("fileUp").click();});
+document.getElementById("fileUp").addEventListener("change",function(e){
+  var list=[].slice.call(e.target.files||[]);e.target.value="";
+  if(!list.length)return;
+  var p=cur();if(!p.files)p.files=[];
+  var hint=document.getElementById("fileUpHint");
+  hint.textContent="正在存…";
+  var okn=0,big=0,bad=0;
+  Promise.all(list.map(function(f){
+    if(f.size>20*1024*1024){big++;return null;}
+    var id="f"+Date.now().toString(36)+Math.floor(Math.random()*10000);
+    return fdbPut(id,f).then(function(){
+      p.files.unshift({id:id,name:f.name,type:f.type||"",size:f.size,
+        cat:guessCat(f.name,f.type),date:today(),note:""});
+      okn++;
+    }).catch(function(){bad++;});
+  })).then(function(){
+    save();renderFiles();
+    hint.textContent="存好 "+okn+" 份"+(big?"，"+big+" 份超过 20MB 没存":"")+(bad?"，"+bad+" 份存失败":"")+
+      "。要分析就把原图发给我，我读完给你回填码。";
+  });
+});
+document.getElementById("fileList").addEventListener("click",function(e){
+  var i=e.target.getAttribute&&e.target.getAttribute("data-delf");
+  if(i==null)return;
+  var p=cur(),f=(p.files||[])[Number(i)];
+  if(!f)return;
+  if(!confirm("删掉「"+f.name+"」？删了就找不回来了。"))return;
+  fdbDel(f.id).catch(function(){});
+  p.files.splice(Number(i),1);save();renderFiles();toast("已删除");
+});
+document.getElementById("fileList").addEventListener("change",function(e){
+  var i=e.target.getAttribute&&e.target.getAttribute("data-cat");
+  if(i==null)return;
+  var f=(cur().files||[])[Number(i)];
+  if(!f)return;
+  f.cat=e.target.value;save();renderFiles();toast("已归类为「"+f.cat+"」");
+});
+document.getElementById("btnListFiles").addEventListener("click",function(){
+  var p=cur(),fs=p.files||[];
+  if(!fs.length){toast("先存点资料");return;}
+  var lines=["【"+p.name+"】待分析资料 "+fs.length+" 份："];
+  fs.slice().reverse().forEach(function(f,i){
+    lines.push((i+1)+". "+(f.date||"")+" "+f.cat+" —— "+f.name+(f.note?"（已分析："+f.note+"）":""));});
+  lines.push("");
+  lines.push("接下来我把原图/文件发你，你读完给我回填码。");
+  var t=lines.join("\n");
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(t).then(function(){toast("清单已复制，发给我就行");});
+  }else{window.prompt("复制这段发给我：",t);}
+});
+document.getElementById("btnApplyAi").addEventListener("click",function(){
+  var v=document.getElementById("aiBox").value.trim(),hint=document.getElementById("aiHint");
+  if(!v){toast("先把回填码粘进来");return;}
+  try{
+    var a=applyAiPatch(v);
+    save();renderAll();genCard();
+    hint.textContent="写入完成：指标 "+a.lab+" 条、用药 "+a.med+" 条、资料结论 "+a.note+" 条"+
+      (a.lab||a.med||a.note?"":"（没识别到新内容，检查一下这段码）");
+    document.getElementById("aiBox").value="";
+    toast("已写进档案");
+  }catch(e){hint.textContent="这段码读不出来："+e.message;}
+});
+
+document.getElementById("btnRestore").addEventListener("click",function(){
+  var s=lastSnap();
+  if(!s){toast("还没有自动备份");return;}
+  if(!confirm("回到这份备份？当前没同步出去的改动会丢。"))return;
+  try{state=fix(JSON.parse(s.data));save();renderAll();genCard();toast("已回到备份");}
+  catch(e){toast("备份损坏了，恢复失败");}});
+
+document.getElementById("fileInput").addEventListener("change",function(e){
+  var f=e.target.files[0];if(!f)return;
+  var fr=new FileReader();fr.onload=function(){doImport(String(fr.result));};fr.readAsText(f);e.target.value="";});
+
+renderAll();
+genCard();
+renderSnapHint();
+})();
+</script>
+</body>
+</html>
