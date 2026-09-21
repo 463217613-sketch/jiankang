@@ -119,7 +119,7 @@ th{color:var(--sub);font-weight:500;font-size:13px}
 <div class="wrap">
   <div class="tabs">
     <div class="tab on" data-tab="today">今日</div>
-    <div class="tab" data-tab="trend">趋势</div>
+    <div class="tab" data-tab="trend">记录</div>
     <div class="tab" data-tab="profile">档案</div>
     <div class="tab" data-tab="files">资料</div>
     <div class="tab" data-tab="settings">设置</div>
@@ -180,12 +180,39 @@ th{color:var(--sub);font-weight:500;font-size:13px}
 
   <section id="tab-trend" class="hidden">
     <div class="card">
-      <h2>最近 14 次血压</h2>
+      <h2>血压趋势</h2>
+      <div class="seg" id="segRange" style="margin-bottom:12px">
+        <button data-r="14">近 14 次</button><button data-r="90">近 3 月</button><button data-r="365">近 1 年</button>
+      </div>
       <div id="chart"></div>
     </div>
+
+    <div class="card">
+      <h2>按月翻看</h2>
+      <div class="row" style="justify-content:space-between;margin-bottom:10px">
+        <button id="btnPrevMonth" style="width:auto;min-width:90px">‹ 上一月</button>
+        <b id="monthLabel" style="font-weight:500"></b>
+        <button id="btnNextMonth" style="width:auto;min-width:90px">下一月 ›</button>
+      </div>
+      <div id="monthList"></div>
+    </div>
+
     <div class="card">
       <h2>明细</h2>
       <div style="overflow-x:auto"><table id="recTable"></table></div>
+    </div>
+
+    <div class="card">
+      <h2>搜记录</h2>
+      <div class="field" style="margin-bottom:8px"><label>关键词（在备注和感受里找）</label>
+        <input id="fSearch" placeholder="比如：头晕"></div>
+      <div id="searchResult"></div>
+    </div>
+
+    <div class="card">
+      <h2>导出留档</h2>
+      <p class="muted" style="margin-top:0">导成表格，Excel 能直接打开，拿给医生看也方便。</p>
+      <button class="primary" id="btnCsv">导出全部记录（CSV）</button>
     </div>
   </section>
 
@@ -348,6 +375,24 @@ th{color:var(--sub);font-weight:500;font-size:13px}
       <p class="hint" id="codeHint" style="margin-top:8px">按名字对上就更新，对不上就新增一份，不会直接删你的档案。</p>
     </div>
 
+    <div class="card" style="border-color:var(--ok);background:var(--ok-bg)">
+      <h2>云端永久保存</h2>
+      <p class="muted" style="margin-top:0">数据只存在浏览器里，清缓存就会丢。开启后，每次记录自动存进<b>你自己的 GitHub 私有仓库</b>——永久保存、自带历史版本、换手机能拉回全部记录。</p>
+      <p class="hint">需要你先做两件事：① 建一个<b>私有</b>仓库（比如 <code>jiankang-data</code>）；② 生成一个访问密钥，权限只勾这个仓库的 <b>Contents: Read and write</b>。密钥只存在这台设备的浏览器里。</p>
+      <div class="field"><label>GitHub 用户名</label><input id="cOwner" placeholder="463217613-sketch"></div>
+      <div class="field"><label>私有仓库名</label><input id="cRepo" placeholder="jiankang-data"></div>
+      <div class="field"><label>访问密钥</label>
+        <input id="cToken" type="password" placeholder="github_pat_..."></div>
+      <label style="display:flex;gap:9px;align-items:center;color:var(--text);font-size:15px;margin:0 0 12px">
+        <input type="checkbox" id="cAuto" style="width:20px;height:20px;min-height:20px;margin:0;flex:none">
+        <span>每次记录后自动同步（推荐）</span></label>
+      <button class="primary" id="btnCloudSave">保存并测试连接</button>
+      <button id="btnCloudPush" style="margin-top:8px">立即上传一份</button>
+      <button id="btnCloudPull" style="margin-top:8px">从云端拉回历史</button>
+      <button class="danger" id="btnCloudOff" style="margin-top:8px">关闭云端同步</button>
+      <p class="hint" id="cloudStatus" style="margin-top:10px"></p>
+    </div>
+
     <div class="card">
       <h2>数据</h2>
       <p class="muted" style="margin-top:0">所有数据只存在这台设备的浏览器里。换手机、换人、备份都靠导出。</p>
@@ -373,7 +418,7 @@ th{color:var(--sub);font-weight:500;font-size:13px}
 
   <div class="nav">
   <div class="on" data-tab="today"><b>今</b>今日</div>
-  <div data-tab="trend"><b>势</b>趋势</div>
+  <div data-tab="trend"><b>记</b>记录</div>
   <div data-tab="profile"><b>档</b>档案</div>
   <div data-tab="files"><b>料</b>资料</div>
   <div data-tab="settings"><b>置</b>设置</div>
@@ -490,6 +535,7 @@ function save(){
   localStorage.setItem(KEY,JSON.stringify(state));
   var now=Date.now();
   if(now-lastSnapTs>6*3600*1000){lastSnapTs=now;snap();renderSnapHint();}
+  if(typeof schedulePush==="function")schedulePush();
 }
 function snap(){
   try{
@@ -652,8 +698,7 @@ function syncSeg(){
 
 function renderTrend(){
   var p=cur();
-  var recs=p.records.filter(function(x){return x.sys&&x.dia;})
-    .sort(function(a,b){return a.date<b.date?-1:1;}).slice(-14);
+  var recs=filterRecs(p);
   var c=document.getElementById("chart");
   if(recs.length<2)c.innerHTML='<p class="muted" style="margin:0">至少两次记录才画得出趋势</p>';
   else{
@@ -670,16 +715,19 @@ function renderTrend(){
     ["sys","dia"].forEach(function(k,idx){
       svg+='<path d="'+recs.map(function(r,i){return (i?"L":"M")+X(i)+" "+Y(Number(r[k]));}).join(" ")+
         '" fill="none" stroke="'+(idx?"#378ADD":"#D85A30")+'" stroke-width="2"/>';});
+    var lblStep=Math.ceil(recs.length/7);
     recs.forEach(function(r,i){
       var j=judge(p,r.sys,r.dia);
-      svg+='<text x="'+X(i)+'" y="'+(H-9)+'" text-anchor="middle" font-size="11" fill="#9a9ea5">'+cnDate(r.date)+'</text>'+
-        '<circle cx="'+X(i)+'" cy="'+Y(Number(r.sys))+'" r="4" fill="'+
+      if(i%lblStep===0||i===recs.length-1)
+        svg+='<text x="'+X(i)+'" y="'+(H-9)+'" text-anchor="middle" font-size="11" fill="#9a9ea5">'+cnDate(r.date)+'</text>';
+      svg+='<circle cx="'+X(i)+'" cy="'+Y(Number(r.sys))+'" r="4" fill="'+
         (j&&j.k==="ok"?"#1D9E75":(j&&j.k==="bad"?"#E24B4A":"#EF9F27"))+'"/>';});
     svg+='</svg><p class="hint" style="margin:8px 0 0">'+
-      '<span style="color:#D85A30">—</span> 高压　<span style="color:#378ADD">—</span> 低压</p>';
+      '<span style="color:#D85A30">—</span> 高压　<span style="color:#378ADD">—</span> 低压　共 '+
+      recs.length+' 次（'+rangeLabel()+'）</p>';
     c.innerHTML=svg;
   }
-  var all=p.records.slice().sort(function(a,b){return a.date<b.date?1:-1;});
+  var all=p.records.slice().filter(hasData).sort(function(a,b){return a.date<b.date?1:-1;});
   var h='<tr><th>日期</th><th>血压</th><th>血糖</th><th>感觉</th></tr>';
   if(!all.length)h+='<tr><td colspan="4" class="muted">还没有记录</td></tr>';
   all.forEach(function(r){
@@ -739,7 +787,7 @@ function renderProfile(){
   document.getElementById("rWeight").value=rm.weight||"";
 }
 
-function renderAll(){renderToday();renderTrend();renderProfile();renderFiles();}
+function renderAll(){renderToday();renderTrend();renderProfile();renderFiles();renderMonth();renderSearch();}
 
 /* ================= 资料袋：图片 / 文件 / CT 影像 ================= */
 var CATS=["体检报告","化验单","CT影像","病历","用药","其他"];
@@ -879,8 +927,8 @@ function genCard(){
   document.getElementById("cardText").value=L.join("\n");
 }
 
-function download(name,text){
-  var b=new Blob([text],{type:"application/json;charset=utf-8"}),a=document.createElement("a");
+function download(name,text,mime){
+  var b=new Blob([text],{type:mime||"application/json;charset=utf-8"}),a=document.createElement("a");
   a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();
   setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},0);
 }
@@ -978,6 +1026,171 @@ function applyCode(text){
     var n=mergeState(JSON.parse(s));
     save();renderAll();genCard();
     return n;});
+}
+
+/* ================= 云端永久保存（存进你自己的 GitHub 私有仓库） ================= */
+var CKEY="health_assistant_cloud";
+var cloud={owner:"",repo:"",token:"",path:"health-data.json",auto:true,on:false,lastSync:0,dirty:false};
+function loadCloud(){
+  try{
+    var c=JSON.parse(localStorage.getItem(CKEY)||"null");
+    if(c&&c.token){
+      cloud.owner=c.owner||"";cloud.repo=c.repo||"";cloud.token=c.token;
+      cloud.path=c.path||"health-data.json";cloud.auto=c.auto!==false;
+      cloud.on=true;cloud.lastSync=c.lastSync||0;cloud.dirty=!!c.dirty;
+    }
+  }catch(e){}
+}
+function persistCloud(){
+  localStorage.setItem(CKEY,JSON.stringify({owner:cloud.owner,repo:cloud.repo,token:cloud.token,
+    path:cloud.path,auto:cloud.auto,lastSync:cloud.lastSync,dirty:cloud.dirty}));
+}
+function cstat(msg,k){
+  var el=document.getElementById("cloudStatus");
+  if(!el)return;
+  var last=cloud.lastSync?("上次同步 "+new Date(cloud.lastSync).toLocaleString("zh-CN")):"还没同步过";
+  el.textContent=(msg?msg+"　":"")+last+(cloud.dirty?"　⚠ 有改动还没传上去":"");
+  el.style.color=(k==="bad")?"var(--bad)":(k==="ok"?"var(--ok)":"");
+}
+function b64enc(str){
+  var u=new TextEncoder().encode(str),s="";
+  for(var i=0;i<u.length;i++)s+=String.fromCharCode(u[i]);
+  return btoa(s);
+}
+function b64dec(b64){
+  var bin=atob(String(b64).replace(/\s/g,"")),u=new Uint8Array(bin.length);
+  for(var i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);
+  return new TextDecoder().decode(u);
+}
+function ghApi(path,opt){
+  opt=opt||{};
+  opt.headers={"Accept":"application/vnd.github+json","X-GitHub-Api-Version":"2022-11-28",
+    "Authorization":"Bearer "+cloud.token};
+  return fetch("https://api.github.com"+path,opt).then(function(r){
+    if(r.status===404)return {__missing:true};
+    if(r.status===401)throw new Error("密钥不对或已失效");
+    if(r.status===403)throw new Error("权限不够或请求太频繁");
+    if(r.status===409||r.status===422)throw new Error("云端有更新，先点「从云端拉回历史」再上传");
+    if(!r.ok)throw new Error("GitHub 返回 "+r.status);
+    return r.json();
+  });
+}
+function ghGet(){
+  return ghApi("/repos/"+cloud.owner+"/"+cloud.repo+"/contents/"+cloud.path+"?ref=main")
+    .then(function(r){
+      if(r.__missing)return {sha:null,data:null};
+      return {sha:r.sha,data:JSON.parse(b64dec(r.content))};});
+}
+function ghPut(reason){
+  return ghGet().then(function(cur){
+    var payload={message:(reason||"更新健康记录")+"　"+new Date().toLocaleString("zh-CN"),
+      content:b64enc(JSON.stringify(state)),branch:"main"};
+    if(cur.sha)payload.sha=cur.sha;
+    return ghApi("/repos/"+cloud.owner+"/"+cloud.repo+"/contents/"+cloud.path,
+      {method:"PUT",body:JSON.stringify(payload)});});
+}
+var pushTimer=null;
+function schedulePush(){
+  if(!cloud.on||!cloud.auto)return;
+  if(pushTimer)clearTimeout(pushTimer);
+  pushTimer=setTimeout(function(){doPush(true);},3000);
+}
+function doPush(silent){
+  if(!cloud.on){if(!silent)toast("先保存云端设置");return Promise.resolve();}
+  cstat("正在上传…");
+  return ghPut("健康记录").then(function(){
+    cloud.lastSync=Date.now();cloud.dirty=false;persistCloud();cstat("已存到云端","ok");
+    if(!silent)toast("已存到云端");
+  }).catch(function(e){
+    cloud.dirty=true;persistCloud();cstat("上传失败："+e.message,"bad");
+    if(!silent)toast("上传失败："+e.message);
+  });
+}
+function doPull(){
+  if(!cloud.on){toast("先保存云端设置");return Promise.resolve();}
+  cstat("正在读取…");
+  return ghGet().then(function(r){
+    if(!r.data){cstat("云端还没有数据，先点「立即上传一份」","bad");return;}
+    var n=mergeState(r.data);
+    save();renderAll();genCard();
+    cloud.lastSync=Date.now();persistCloud();
+    cstat("已拉回 "+n+" 份档案并与本机合并","ok");toast("拉回了 "+n+" 份档案");
+  }).catch(function(e){cstat("读取失败："+e.message,"bad");});
+}
+
+/* ================= 历史查询 ================= */
+var trendRange="14",histMonth="";
+function hasData(r){return !!(r.sys||r.glu||r.weight||r.note||r.mood);}
+function filterRecs(p){
+  var recs=p.records.filter(function(x){return x.sys&&x.dia;})
+    .sort(function(a,b){return a.date<b.date?-1:1;});
+  if(trendRange==="14")return recs.slice(-14);
+  var d=new Date();d.setDate(d.getDate()-Number(trendRange));
+  var s=d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+  return recs.filter(function(r){return r.date>=s;});
+}
+function rangeLabel(){
+  return trendRange==="14"?"最近 14 次":(trendRange==="90"?"最近 3 个月":"最近 1 年");
+}
+function renderMonth(){
+  var box=document.getElementById("monthList");
+  if(!box)return;
+  var p=cur();
+  if(!histMonth)histMonth=today().slice(0,7);
+  document.getElementById("monthLabel").textContent=
+    histMonth.slice(0,4)+" 年 "+Number(histMonth.slice(5,7))+" 月";
+  var list=p.records.filter(function(r){return String(r.date).slice(0,7)===histMonth&&hasData(r);})
+    .sort(function(a,b){return a.date<b.date?1:-1;});
+  if(!list.length){box.innerHTML='<p class="muted" style="margin:0">这个月还没有记录</p>';return;}
+  var okn=list.filter(function(r){var j=judge(p,r.sys,r.dia);return j&&j.k==="ok";}).length;
+  box.innerHTML='<p class="hint" style="margin:0 0 10px">这个月记了 '+list.length+' 天，其中 '+okn+' 天血压正常</p>'+
+    list.map(function(r){
+      var j=judge(p,r.sys,r.dia);
+      var extras=[];
+      if(r.glu)extras.push("血糖 "+r.glu);
+      if(r.weight)extras.push("体重 "+r.weight);
+      if(r.mood)extras.push(r.mood);
+      return '<div class="list-item"><div><div class="t">'+
+        r.date.slice(5).replace("-"," 月 ")+' 日'+(j?' <span class="pill '+j.k+'">'+esc(r.sys)+" / "+esc(r.dia)+" "+esc(j.t)+'</span>':'')+
+        '</div><div class="s">'+(extras.length?esc(extras.join("　")):"")+
+        (r.note?'<br>'+esc(r.note):'')+'</div></div></div>';
+    }).join("");
+}
+function shiftMonth(delta){
+  if(!histMonth)histMonth=today().slice(0,7);
+  var y=Number(histMonth.slice(0,4)),m=Number(histMonth.slice(5,7))+delta;
+  while(m<1){m+=12;y--;}
+  while(m>12){m-=12;y++;}
+  histMonth=y+"-"+pad(m);
+  if(histMonth>today().slice(0,7))histMonth=today().slice(0,7);
+  renderMonth();
+}
+function renderSearch(){
+  var el=document.getElementById("fSearch"),box=document.getElementById("searchResult");
+  if(!el||!box)return;
+  var q=el.value.trim();
+  if(!q){box.innerHTML='<p class="hint" style="margin:0">输入关键词，比如「头晕」「咳嗽」</p>';return;}
+  var p=cur();
+  var hits=p.records.filter(function(r){
+    return String(r.note||"").indexOf(q)>-1||String(r.mood||"").indexOf(q)>-1;})
+    .sort(function(a,b){return a.date<b.date?1:-1;});
+  if(!hits.length){box.innerHTML='<p class="muted" style="margin:0">没找到含「'+esc(q)+'」的记录</p>';return;}
+  box.innerHTML='<p class="hint" style="margin:0 0 10px">找到 '+hits.length+' 天</p>'+
+    hits.map(function(r){
+      return '<div class="list-item"><div><div class="t">'+cnDate(r.date)+'</div>'+
+        '<div class="s">'+(r.sys?esc(r.sys)+" / "+esc(r.dia)+"　":"")+esc(r.note||r.mood||"")+'</div></div></div>';
+    }).join("");
+}
+function exportCsv(){
+  var p=cur();
+  var rows=[["日期","高压","低压","血糖","体重","感受","备注"]];
+  p.records.slice().filter(hasData).sort(function(a,b){return a.date<b.date?-1:1;}).forEach(function(r){
+    rows.push([r.date,r.sys||"",r.dia||"",r.glu||"",r.weight||"",r.mood||"",r.note||""]);});
+  if(rows.length<2){toast("还没有记录可以导出");return;}
+  var csv="\ufeff"+rows.map(function(r){
+    return r.map(function(c){return '"'+String(c).replace(/"/g,'""')+'"';}).join(",");}).join("\r\n");
+  download(p.name+"-健康记录-"+today()+".csv",csv,"text/csv;charset=utf-8");
+  toast("导出了 "+(rows.length-1)+" 条记录");
 }
 
 function switchProfile(){
@@ -1206,9 +1419,68 @@ document.getElementById("fileInput").addEventListener("change",function(e){
   var f=e.target.files[0];if(!f)return;
   var fr=new FileReader();fr.onload=function(){doImport(String(fr.result));};fr.readAsText(f);e.target.value="";});
 
+/* ---- 记录页：范围切换 / 按月 / 搜索 / 导出 ---- */
+function syncRange(){
+  var bs=document.querySelectorAll("#segRange button");
+  for(var i=0;i<bs.length;i++)bs[i].className=(bs[i].getAttribute("data-r")===trendRange)?"on":"";
+}
+var rangeBtns=document.querySelectorAll("#segRange button");
+for(var ri=0;ri<rangeBtns.length;ri++){
+  rangeBtns[ri].addEventListener("click",function(){
+    trendRange=this.getAttribute("data-r");syncRange();renderTrend();});}
+document.getElementById("btnPrevMonth").addEventListener("click",function(){shiftMonth(-1);});
+document.getElementById("btnNextMonth").addEventListener("click",function(){shiftMonth(1);});
+document.getElementById("fSearch").addEventListener("input",renderSearch);
+document.getElementById("btnCsv").addEventListener("click",exportCsv);
+
+/* ---- 云端永久保存 ---- */
+document.getElementById("btnCloudSave").addEventListener("click",function(){
+  var o=document.getElementById("cOwner").value.trim()
+        .replace(/^https?:\/\/github\.com\//i,"").replace(/\/+$/,"");
+  var r=document.getElementById("cRepo").value.trim();
+  var t=document.getElementById("cToken").value.trim();
+  if(!o||!r||!t){toast("用户名、仓库名、密钥都要填");return;}
+  cloud.owner=o;cloud.repo=r;cloud.token=t;
+  cloud.auto=document.getElementById("cAuto").checked;
+  cloud.on=true;cloud.dirty=true;persistCloud();
+  cstat("正在测试连接…");
+  ghApi("/repos/"+cloud.owner+"/"+cloud.repo).then(function(info){
+    if(info.__missing)throw new Error("找不到这个仓库，检查用户名和仓库名");
+    if(info.private===false)throw new Error("这个仓库是公开的！健康数据会被别人看到，请先在仓库设置里改成私有");
+    return ghPut("开始保存健康记录");
+  }).then(function(){
+    cloud.lastSync=Date.now();cloud.dirty=false;persistCloud();
+    cstat("连接成功，已上传第一份","ok");toast("云端已开启");
+  }).catch(function(e){
+    cloud.dirty=true;persistCloud();cstat("没连上："+e.message,"bad");});
+});
+document.getElementById("btnCloudPush").addEventListener("click",function(){doPush(false);});
+document.getElementById("btnCloudPull").addEventListener("click",function(){
+  if(!confirm("会用云端版本覆盖同名档案的设置（血压等记录按日期合并，不会丢）。继续？"))return;
+  doPull();});
+document.getElementById("btnCloudOff").addEventListener("click",function(){
+  if(!confirm("关掉云端同步？已经存进仓库的记录还在，只是不再自动同步。"))return;
+  cloud.on=false;cloud.dirty=false;localStorage.removeItem(CKEY);
+  document.getElementById("cToken").value="";
+  cstat("已关闭。数据仍在你的仓库里，随时可以重新开启","ok");
+  toast("已关闭云端同步");});
+
 renderAll();
 genCard();
 renderSnapHint();
+syncRange();
+
+/* ---- 恢复云端设置 ---- */
+loadCloud();
+(function(){
+  if(!cloud.on)return;
+  document.getElementById("cOwner").value=cloud.owner;
+  document.getElementById("cRepo").value=cloud.repo;
+  document.getElementById("cToken").value=cloud.token;
+  document.getElementById("cAuto").checked=cloud.auto;
+  cstat("");
+  if(cloud.dirty)setTimeout(function(){doPush(true);},1200);
+})();
 })();
 </script>
 </body>
